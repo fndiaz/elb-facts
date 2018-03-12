@@ -27,7 +27,7 @@
 
       - name: Add ips in new hosts
         add_host:
-          name: "{{ item.instances.0.network_interfaces.0.public_ip_address }}"
+          name: "{{ item.instances.0.network_interfaces.0.private_ip_address }}"
           #name: "{{ item.instances.0.public_ip_address }}"
           groups: just_created
         with_items: "{{ instance_details.results }}"
