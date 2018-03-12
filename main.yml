@@ -1,0 +1,46 @@
+---
+  - name: Get ip elb and add_host
+    hosts: local
+    connection: local
+    gather_facts: false
+    tags: provisioning
+
+    tasks:
+      - name: Get elb facts
+        ec2_elb_facts:
+          names: lb-web
+          region: us-west-2
+        register: elb_facts
+
+      - name: Debug instances elb
+        debug:
+          msg: "{{ elb_facts.elbs.0.instances }}"
+     
+      - name: Get instances details
+        ec2_instance_facts:
+          region: us-west-2
+          instance_ids:
+            - "{{ item }}"
+        register: instance_details
+        with_items: 
+          - "{{ elb_facts.elbs.0.instances }}"
+
+      - name: Add ips in new hosts
+        add_host:
+          #name: "{{ item.instances.0.network_interfaces.0.public_ip_address }}"
+          name: "{{ item.instances.0.public_ip_address }}"
+          groups: just_created
+        with_items: "{{ instance_details.results }}"
+
+
+  - name: Commands
+    hosts: just_created
+    user: ec2-user
+    sudo: yes
+
+    tasks:
+      - name: Details
+        debug:
+          msg: "System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+

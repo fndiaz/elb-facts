@@ -1,0 +1,37 @@
+---
+  - name: Provision an EC2 Instance
+    hosts: local
+    connection: local
+    gather_facts: false
+    tags: provisioning
+
+    tasks:
+      - action:
+          module: ec2_elb_facts
+          names: lb-web
+          region: us-west-2
+        register: elb_facts
+
+      - action:
+          module: debug
+          msg: "{{ elb_facts.elbs.0.instances }}"
+        register: instances_elb
+
+      - ec2_instance_facts:
+          region: us-west-2
+          instance_ids:
+            - "{{ item }}"
+        with_items: 
+          - "{{ elb_facts.elbs.0.instances }}"
+
+#      - action:
+#          module: debug
+#          msg: "{{ instance_detail.instances.0.network_interfaces.0.private_ip_address }}"
+
+
+#      - action:
+#          module: debug
+#          msg: "{{ item.instances.0.network_interfaces.0.private_ip_address }}"
+#        with_items: "{{ instance_details.results }}"
+
+
